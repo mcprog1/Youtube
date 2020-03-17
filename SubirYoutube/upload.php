@@ -3,18 +3,17 @@
 require_once 'config.php';
 
 // Include database class
-require_once 'DB.class.php';
+/*require_once 'DB.class.php';*/
 
 // Create an object of database class
-$db = new DB;
+//$db = new DB;
 
 // If the form is submitted
+/*
 if(isset($_POST['videoSubmit'])){
     // Video info
-    $title = $_POST['title'];
-    $desc = $_POST['description'];
-    $tags = $_POST['tags'];
-    $privacy = !empty($_POST['privacy'])?$_POST['privacy']:'public';
+    
+   // $privacy = !empty($_POST['privacy'])?$_POST['privacy']:'public';
     
     // Check whether file field is not empty
     if($_FILES["file"]["name"] != ''){
@@ -67,33 +66,34 @@ if (isset($_GET['code'])) {
   $_SESSION[$tokenSessionKey] = $client->getAccessToken();
   header('Location: ' . REDIRECT_URL);
 }
-
+*/
 if (isset($_SESSION[$tokenSessionKey])) {
-  $client->setAccessToken($_SESSION[$tokenSessionKey]);
+  $gclient->setAccessToken($_SESSION[$tokenSessionKey]);
 }
-
 // Check to ensure that the access token was successfully acquired.
-if ($client->getAccessToken()) {
+if (isset($_SESSION[$tokenSessionKey]){
   $htmlBody = '';
   try{
     // REPLACE this value with the path to the file you are uploading.
-    $videoPath = 'videos/'.$videoData['file_name'];
-    
+    $videoPath = 'videos/'.$_FILES["file"]["name"];
+    $title = $_POST['title'];
+    $desc = $_POST['description'];
+    $tags = $_POST['tags'];
     if(!empty($videoData['youtube_video_id'])){
         // Uploaded video data
-        $videoTitle = $videoData['title'];
-        $videoDesc = $videoData['description'];
-        $videoTags = $videoData['tags'];
-        $videoId = $videoData['youtube_video_id'];
+        $videoTitle = $title;
+        $videoDesc = $desc;
+        $videoTags = $tags;
+        //ideoId = $videoData['youtube_video_id'];
     }else{
         // Create a snippet with title, description, tags and category ID
         // Create an asset resource and set its snippet metadata and type.
         // This example sets the video's title, description, keyword tags, and
         // video category.
         $snippet = new Google_Service_YouTube_VideoSnippet();
-        $snippet->setTitle($videoData['title']);
-        $snippet->setDescription($videoData['description']);
-        $snippet->setTags(explode(",", $videoData['tags']));
+        $snippet->setTitle($videoTitle);
+        $snippet->setDescription($videoDesc);
+        $snippet->setTags(explode(",", $videoTags));
     
         // Numeric video category. See
         // https://developers.google.com/youtube/v3/docs/videoCategories/list
@@ -102,7 +102,7 @@ if ($client->getAccessToken()) {
         // Set the video's status to "public". Valid statuses are "public",
         // "private" and "unlisted".
         $status = new Google_Service_YouTube_VideoStatus();
-        $status->privacyStatus = $videoData['privacy'];
+        $status->privacyStatus = "public";
     
         // Associate the snippet and status objects with a new video resource.
         $video = new Google_Service_YouTube_Video();
@@ -116,14 +116,14 @@ if ($client->getAccessToken()) {
     
         // Setting the defer flag to true tells the client to return a request which can be called
         // with ->execute(); instead of making the API call immediately.
-        $client->setDefer(true);
-    
+       $gclient->setDefer(true); 
+        
         // Create a request for the API's videos.insert method to create and upload the video.
         $insertRequest = $youtube->videos->insert("status,snippet", $video);
     
         // Create a MediaFileUpload object for resumable uploads.
         $media = new Google_Http_MediaFileUpload(
-            $client,
+            $gclient,
             $insertRequest,
             'video/*',
             null,
