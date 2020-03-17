@@ -15,7 +15,15 @@ if(isset($_GET['err'])){
     }
 }
 ?>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
 <form method="post" enctype="multipart/form-data" action="upload.php">
     <?php echo (!empty($errorMsg))?'<p class="err-msg">'.$errorMsg.'</p>':''; ?>
     <label for="title">Title:</label>
@@ -33,3 +41,5 @@ if(isset($_GET['err'])){
     <label for="file">Choose Video File:</label> <input type="file" name="file" >
     <input name="videoSubmit" type="submit" value="Upload">
 </form>
+</body>
+</html>

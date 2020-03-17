@@ -3,17 +3,18 @@
 require_once 'config.php';
 
 // Include database class
-/*require_once 'DB.class.php';*/
+//require_once 'DB.class.php';
 
 // Create an object of database class
 //$db = new DB;
 
 // If the form is submitted
-/*
 if(isset($_POST['videoSubmit'])){
     // Video info
-    
-   // $privacy = !empty($_POST['privacy'])?$_POST['privacy']:'public';
+    $title = $_POST['title'];
+    $desc = $_POST['description'];
+    $tags = $_POST['tags'];
+    $privacy = !empty($_POST['privacy'])?$_POST['privacy']:'public';
     
     // Check whether file field is not empty
     if($_FILES["file"]["name"] != ''){
@@ -34,10 +35,10 @@ if(isset($_POST['videoSubmit'])){
                     'privacy' => $privacy,
                     'file_name' => $fileName
                 );
-                $insert = $db->insert($vdata);
+                //$insert = $db->insert($vdata);
                 
                 // Store db row id in the session
-                $_SESSION['uploadedFileId'] = $insert;
+               // $_SESSION['uploadedFileId'] = $insert;
             }else{
                 header("Location:".BASE_URL."index.php?err=ue");
                 exit;
@@ -53,7 +54,7 @@ if(isset($_POST['videoSubmit'])){
 }
 
 // Get uploaded video data from database
-$videoData = $db->getRow($_SESSION['uploadedFileId']);
+//$videoData = $db->getRow($_SESSION['uploadedFileId']);
 
 // Check if an auth token exists for the required scopes
 $tokenSessionKey = 'token-' . $client->prepareScopes();
@@ -66,34 +67,33 @@ if (isset($_GET['code'])) {
   $_SESSION[$tokenSessionKey] = $client->getAccessToken();
   header('Location: ' . REDIRECT_URL);
 }
-*/
+
 if (isset($_SESSION[$tokenSessionKey])) {
-  $gclient->setAccessToken($_SESSION[$tokenSessionKey]);
+  $client->setAccessToken($_SESSION[$tokenSessionKey]);
 }
+
 // Check to ensure that the access token was successfully acquired.
-if (isset($_SESSION[$tokenSessionKey]){
+if ($client->getAccessToken()) {
   $htmlBody = '';
   try{
     // REPLACE this value with the path to the file you are uploading.
-    $videoPath = 'videos/'.$_FILES["file"]["name"];
-    $title = $_POST['title'];
-    $desc = $_POST['description'];
-    $tags = $_POST['tags'];
+    $videoPath = 'videos/'.$fileName;
+    
     if(!empty($videoData['youtube_video_id'])){
         // Uploaded video data
-        $videoTitle = $title;
-        $videoDesc = $desc;
-        $videoTags = $tags;
-        //ideoId = $videoData['youtube_video_id'];
+        $videoTitle = $videoData['title'];
+        $videoDesc = $videoData['description'];
+        $videoTags = $videoData['tags'];
+        $videoId = $videoData['youtube_video_id'];
     }else{
         // Create a snippet with title, description, tags and category ID
         // Create an asset resource and set its snippet metadata and type.
         // This example sets the video's title, description, keyword tags, and
         // video category.
         $snippet = new Google_Service_YouTube_VideoSnippet();
-        $snippet->setTitle($videoTitle);
-        $snippet->setDescription($videoDesc);
-        $snippet->setTags(explode(",", $videoTags));
+        $snippet->setTitle($_POST['title']);
+        $snippet->setDescription( $_POST['description']);
+        $snippet->setTags(explode(",", $_POST['tags']));
     
         // Numeric video category. See
         // https://developers.google.com/youtube/v3/docs/videoCategories/list
@@ -102,7 +102,7 @@ if (isset($_SESSION[$tokenSessionKey]){
         // Set the video's status to "public". Valid statuses are "public",
         // "private" and "unlisted".
         $status = new Google_Service_YouTube_VideoStatus();
-        $status->privacyStatus = "public";
+        $status->privacyStatus = $privacy;
     
         // Associate the snippet and status objects with a new video resource.
         $video = new Google_Service_YouTube_Video();
@@ -116,14 +116,14 @@ if (isset($_SESSION[$tokenSessionKey]){
     
         // Setting the defer flag to true tells the client to return a request which can be called
         // with ->execute(); instead of making the API call immediately.
-       $gclient->setDefer(true); 
-        
+        $client->setDefer(true);
+    
         // Create a request for the API's videos.insert method to create and upload the video.
         $insertRequest = $youtube->videos->insert("status,snippet", $video);
     
         // Create a MediaFileUpload object for resumable uploads.
         $media = new Google_Http_MediaFileUpload(
-            $gclient,
+            $client,
             $insertRequest,
             'video/*',
             null,
@@ -146,10 +146,10 @@ if (isset($_SESSION[$tokenSessionKey]){
         $client->setDefer(false);
         
         // Update youtube video id to database
-        $db->update($videoData['id'], $status['id']);
+        //$db->update($videoData['id'], $status['id']);
         
         // Delete video file from local server
-        @unlink("videos/".$videoData['file_name']);
+        @unlink("videos/".$fileName);
         
         // uploaded video data
         $videoTitle = $status['snippet']['title'];

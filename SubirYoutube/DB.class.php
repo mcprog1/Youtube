@@ -3,8 +3,8 @@ class DB {
     // Database configuration
     private $dbHost     = 'localhost';
     private $dbUsername = 'root';
-    private $dbPassword = 'root';
-    private $dbName     = 'codexworld';
+    private $dbPassword = '';
+    private $dbName     = 'youtube';
     private $tblName    = 'videos';
     
     function __construct(){
