@@ -8,49 +8,46 @@ require_once 'config.php';
 // Create an object of database class
 //$db = new DB;
 
-// If the form is submitted
-if(isset($_POST['videoSubmit'])){
-    // Video info
-    $title = $_POST['title'];
-    $desc = $_POST['description'];
-    $tags = $_POST['tags'];
-    $privacy = !empty($_POST['privacy'])?$_POST['privacy']:'public';
-    
-    // Check whether file field is not empty
-    if($_FILES["file"]["name"] != ''){
-        // File upload path
-        $fileName = str_shuffle('codexworld').'-'.basename($_FILES["file"]["name"]);
-        $filePath = "videos/".$fileName;
-        
-        // Check the file type
-        $allowedTypeArr = array("video/mp4", "video/avi", "video/mpeg", "video/mpg", "video/mov", "video/wmv", "video/rm");
-        if(in_array($_FILES['file']['type'], $allowedTypeArr)){
-            // Upload file to local server
-            if(move_uploaded_file($_FILES['file']['tmp_name'], $filePath)){
-                // Insert video data in the database
-                $vdata = array(
-                    'title' => $title,
-                    'description' => $desc,
-                    'tags' => $tags,
-                    'privacy' => $privacy,
-                    'file_name' => $fileName
-                );
-                //$insert = $db->insert($vdata);
-                
-                // Store db row id in the session
-               // $_SESSION['uploadedFileId'] = $insert;
-            }else{
-                header("Location:".BASE_URL."index.php?err=ue");
-                exit;
-            }
+// Video info
+$title = $_POST['title'];
+$desc = $_POST['description'];
+$tags = $_POST['tags'];
+$privacy = !empty($_POST['privacy'])?$_POST['privacy']:'public';
+
+// Check whether file field is not empty
+if($_FILES["file"]["name"] != ''){
+    // File upload path
+    $fileName = str_shuffle('codexworld').'-'.basename($_FILES["file"]["name"]);
+    $filePath = "videos/".$fileName;
+
+    // Check the file type
+    $allowedTypeArr = array("video/mp4", "video/avi", "video/mpeg", "video/mpg", "video/mov", "video/wmv", "video/rm");
+    if(in_array($_FILES['file']['type'], $allowedTypeArr)){
+        // Upload file to local server
+        if(move_uploaded_file($_FILES['file']['tmp_name'], $filePath)){
+            // Insert video data in the database
+            $vdata = array(
+                'title' => $title,
+                'description' => $desc,
+                'tags' => $tags,
+                'privacy' => $privacy,
+                'file_name' => $fileName
+            );
+            //$insert = $db->insert($vdata);
+
+            // Store db row id in the session
+           // $_SESSION['uploadedFileId'] = $insert;
         }else{
-            header("Location:".BASE_URL."index.php?err=fe");
+            header("Location:".BASE_URL."index.php?err=ue");
             exit;
         }
     }else{
-        header('Location:'.BASE_URL.'index.php?err=bf');
+        header("Location:".BASE_URL."index.php?err=fe");
         exit;
     }
+}else{
+    header('Location:'.BASE_URL.'index.php?err=bf');
+    exit;
 }
 
 // Get uploaded video data from database
